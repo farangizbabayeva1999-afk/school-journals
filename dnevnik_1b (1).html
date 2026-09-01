@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Электронный дневник — 1 «Б» класс</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#241F30; --ink-soft:#655D74; --ink-faint:#9891A3;
+  --paper:#FBF8F4; --card:#FFFFFF; --line:#E7E0D3;
+  --plum:#5B3A5C; --plum-soft:#F0E5EF; --plum-deep:#3E2740;
+  --gold:#AD8433; --gold-soft:#F3E7C7;
+  --sage:#5E7A54; --sage-soft:#E3ECDC;
+  --rose:#A14C54; --rose-soft:#F5E1DF;
+  --blue:#3A5A85; --blue-soft:#DDE6F1;
+  --amber:#B4611E; --amber-soft:#F7E2CC;
+  --radius:16px;
+  --shadow:0 1px 2px rgba(36,31,48,.06), 0 6px 20px rgba(36,31,48,.07);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:'Manrope',sans-serif;
+  background:
+    radial-gradient(1100px 500px at 8% -8%, #F6EEDC 0%, transparent 55%),
+    radial-gradient(900px 500px at 108% 0%, #EFE3EC 0%, transparent 55%),
+    var(--paper);
+  color:var(--ink);
+  min-height:100vh;
+  -webkit-tap-highlight-color: transparent;
+}
+.serif{font-family:'Cormorant Garamond', serif;}
+button{font-family:inherit; cursor:pointer;}
+input,select{font-family:inherit;}
+
+/* ---------- ШАПКА ---------- */
+.topbar{
+  position:sticky; top:0; z-index:40;
+  background:rgba(251,248,244,.92); backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);
+  padding:10px 16px;
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+}
+.brand{display:flex; align-items:center; gap:10px; flex:1; min-width:180px;}
+.brand-badge{
+  width:38px;height:38px;border-radius:10px;
+  background:linear-gradient(135deg,var(--plum),var(--plum-deep));
+  display:flex;align-items:center;justify-content:center;
+  color:#fff; font-family:'Cormorant Garamond',serif; font-weight:700; font-size:19px;
+  flex-shrink:0;
+}
+.brand-text .t1{font-size:11.5px; letter-spacing:.06em; color:var(--gold); font-weight:800; text-transform:uppercase;}
+.brand-text .t2{font-family:'Cormorant Garamond',serif; font-weight:700; font-size:19px; line-height:1.1;}
+.month-select{
+  border:1px solid var(--line); background:#fff; border-radius:10px;
+  padding:8px 12px; font-weight:700; font-size:13.5px; color:var(--ink);
+}
+.save-dot{width:9px;height:9px;border-radius:50%; background:var(--sage); flex-shrink:0; transition:background .3s;}
+.save-dot.saving{background:var(--gold); animation:pulse 1s infinite;}
+.save-dot.error{background:var(--rose);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+.save-label{font-size:11px; color:var(--ink-faint); font-weight:600;}
+
+.tabs{
+  display:flex; gap:4px; overflow-x:auto; padding:8px 16px 0;
+  border-bottom:1px solid var(--line); background:var(--paper);
+  position:sticky; top:59px; z-index:39;
+  scrollbar-width:none;
+}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{
+  border:none; background:none; padding:10px 14px; font-weight:700; font-size:13px;
+  color:var(--ink-soft); white-space:nowrap; border-radius:10px 10px 0 0;
+  border-bottom:3px solid transparent;
+}
+.tab.active{color:var(--plum); border-bottom:3px solid var(--plum); background:#fff;}
+
+.container{max-width:980px; margin:0 auto; padding:22px 16px 90px;}
+
+/* ---------- ОБЩИЕ КОМПОНЕНТЫ ---------- */
+.card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:20px;}
+.h1{font-family:'Cormorant Garamond',serif; font-weight:700; font-size:30px; margin:0 0 4px;}
+.h2{font-family:'Cormorant Garamond',serif; font-weight:700; font-size:22px; margin:0 0 12px;}
+.muted{color:var(--ink-soft); font-size:13.5px;}
+.section-gap{margin-top:22px;}
+
+.grid-stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px;}
+.stat-box{
+  background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px;
+  display:flex; flex-direction:column; gap:4px;
+}
+.stat-box .val{font-family:'Cormorant Garamond',serif; font-weight:700; font-size:32px; color:var(--ink);}
+.stat-box .lbl{font-size:12px; color:var(--ink-soft); font-weight:600; text-transform:uppercase; letter-spacing:.02em;}
+.stat-box.plum .val{color:var(--plum);} .stat-box.sage .val{color:var(--sage);}
+.stat-box.gold .val{color:var(--gold);} .stat-box.rose .val{color:var(--rose);}
+
+.btn{
+  border:none; border-radius:12px; padding:11px 18px; font-weight:700; font-size:13.5px;
+  display:inline-flex; align-items:center; gap:8px;
+}
+.btn-primary{background:var(--plum); color:#fff;}
+.btn-primary:active{transform:scale(.97);}
+.btn-soft{background:var(--plum-soft); color:var(--plum);}
+.btn-gold{background:var(--gold-soft); color:var(--gold);}
+.btn-outline{background:#fff; border:1px solid var(--line); color:var(--ink);}
+.btn-danger{background:var(--rose-soft); color:var(--rose);}
+.btn-sm{padding:7px 12px; font-size:12.5px; border-radius:9px;}
+.btn:disabled{opacity:.4; cursor:not-allowed;}
+
+.quick-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin-top:16px;}
+.quick-btn{
+  background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px;
+  text-align:left; display:flex; flex-direction:column; gap:6px; box-shadow:var(--shadow);
+}
+.quick-btn .ic{font-size:20px;}
+.quick-btn .lbl{font-weight:800; font-size:14px; color:var(--ink);}
+.quick-btn:active{transform:scale(.98);}
+
+table{border-collapse:collapse; width:100%;}
+th,td{text-align:left;}
+
+/* ---------- УЧЕНИКИ ---------- */
+.search-row{display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap;}
+.search-input{flex:1; min-width:160px; border:1px solid var(--line); border-radius:10px; padding:10px 14px; font-size:14px;}
+.student-row{
+  display:flex; align-items:center; gap:12px; padding:13px 6px; border-bottom:1px solid var(--line);
+}
+.student-row:last-child{border-bottom:none;}
+.student-num{
+  width:30px;height:30px;border-radius:9px; background:var(--plum-soft); color:var(--plum);
+  display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; flex-shrink:0;
+}
+.student-name{flex:1; font-weight:700; font-size:14.5px; cursor:pointer;}
+.student-name:hover{color:var(--plum);}
+.row-actions{display:flex; gap:6px;}
+.icon-btn{
+  width:32px;height:32px; border-radius:9px; border:1px solid var(--line); background:#fff;
+  display:flex; align-items:center; justify-content:center; font-size:14px;
+}
+
+/* ---------- ПОСЕЩАЕМОСТЬ ---------- */
+.att-toolbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:14px;}
+.legend{display:flex; gap:10px; flex-wrap:wrap; font-size:12px; color:var(--ink-soft); margin-bottom:12px;}
+.legend span{display:inline-flex; align-items:center; gap:5px; font-weight:700;}
+.legend i{width:18px; height:18px; border-radius:5px; display:inline-flex; align-items:center; justify-content:center; font-style:normal; font-size:11px; color:#fff;}
+.att-scroll{overflow-x:auto; border:1px solid var(--line); border-radius:14px;}
+.att-table{border-collapse:separate; border-spacing:0; min-width:600px;}
+.att-table th, .att-table td{border-bottom:1px solid var(--line); border-right:1px solid var(--line);}
+.att-table th{background:var(--plum-soft); color:var(--plum); font-size:11.5px; padding:8px 4px; position:sticky; top:0;}
+.att-table td.namecell{
+  padding:8px 10px; font-weight:700; font-size:13px; white-space:nowrap; background:#fff; position:sticky; left:0; z-index:2;
+  border-right:2px solid var(--line);
+}
+.att-table th.namecell{position:sticky; left:0; z-index:3; background:var(--plum-soft);}
+.att-cell{
+  width:34px; height:34px; text-align:center; font-weight:800; font-size:13px; cursor:pointer;
+  color:var(--ink-faint); background:#fff;
+}
+.att-cell.present{background:var(--sage-soft); color:var(--sage);}
+.att-cell.excused{background:var(--gold-soft); color:var(--gold);}
+.att-cell.unexcused{background:var(--rose-soft); color:var(--rose);}
+.att-cell.late{background:var(--blue-soft); color:var(--blue);}
+.att-cell:active{opacity:.7;}
+
+.popover-backdrop{position:fixed; inset:0; z-index:100;}
+.popover{
+  position:absolute; z-index:101; background:#fff; border-radius:14px; box-shadow:0 10px 40px rgba(0,0,0,.25);
+  padding:8px; display:flex; gap:6px; border:1px solid var(--line);
+}
+.pop-btn{
+  width:42px;height:42px; border-radius:10px; border:none; font-weight:800; font-size:16px; color:#fff;
+}
+.pop-clear{background:#EFEAE2; color:var(--ink-soft); font-size:12px;}
+
+/* ---------- ОЦЕНКИ ---------- */
+.grade-form{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; align-items:end;}
+.field label{display:block; font-size:11.5px; font-weight:700; color:var(--ink-soft); margin-bottom:5px; text-transform:uppercase; letter-spacing:.02em;}
+.field select, .field input{width:100%; border:1px solid var(--line); border-radius:10px; padding:9px 10px; font-size:14px;}
+.grade-pick{display:flex; gap:6px;}
+.grade-pick button{
+  flex:1; border:1px solid var(--line); background:#fff; border-radius:10px; padding:9px 0; font-weight:800; font-size:15px; color:var(--ink-soft);
+}
+.grade-pick button.g2{color:var(--rose);} .grade-pick button.g3{color:var(--amber);}
+.grade-pick button.g4{color:var(--blue);} .grade-pick button.g5{color:var(--sage);}
+.grade-pick button.active{color:#fff;}
+.grade-pick button.g2.active{background:var(--rose);}
+.grade-pick button.g3.active{background:var(--amber);}
+.grade-pick button.g4.active{background:var(--blue);}
+.grade-pick button.g5.active{background:var(--sage);}
+
+.log-row{display:flex; align-items:center; gap:10px; padding:10px 4px; border-bottom:1px solid var(--line); font-size:13.5px;}
+.log-row:last-child{border-bottom:none;}
+.grade-chip{
+  width:30px;height:30px;border-radius:9px; display:flex; align-items:center; justify-content:center; font-weight:800; color:#fff; flex-shrink:0;
+}
+.grade-chip.g2{background:var(--rose);} .grade-chip.g3{background:var(--amber);}
+.grade-chip.g4{background:var(--blue);} .grade-chip.g5{background:var(--sage);}
+.log-main{flex:1;}
+.log-sub{color:var(--ink-soft); font-size:12px;}
+
+/* ---------- ФИЛЬТРЫ ---------- */
+.filter-row{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;}
+.chip-select{border:1px solid var(--line); background:#fff; border-radius:10px; padding:8px 12px; font-size:13px; font-weight:700;}
+
+/* ---------- КАРТОЧКА УЧЕНИКА ---------- */
+.back-link{display:inline-flex; align-items:center; gap:6px; color:var(--plum); font-weight:700; font-size:13.5px; margin-bottom:14px; background:none; border:none; padding:0;}
+.subject-bar-row{display:flex; align-items:center; gap:10px; margin:8px 0;}
+.subject-bar-row .name{width:130px; font-size:13px; font-weight:700; flex-shrink:0;}
+.subject-bar-track{flex:1; height:10px; background:var(--line); border-radius:6px; overflow:hidden;}
+.subject-bar-fill{height:100%; background:var(--plum);}
+.subject-bar-val{width:44px; text-align:right; font-weight:800; font-size:13px; color:var(--plum);}
+
+.tag{display:inline-block; padding:4px 10px; border-radius:8px; font-size:12px; font-weight:700;}
+.tag-good{background:var(--sage-soft); color:var(--sage);}
+.tag-warn{background:var(--rose-soft); color:var(--rose);}
+
+/* ---------- МОДАЛКИ ---------- */
+.modal-backdrop{position:fixed; inset:0; background:rgba(36,31,48,.45); z-index:200; display:flex; align-items:center; justify-content:center; padding:16px;}
+.modal{background:#fff; border-radius:18px; padding:22px; width:100%; max-width:420px; box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.modal h3{font-family:'Cormorant Garamond',serif; font-size:22px; margin:0 0 14px;}
+.modal .field{margin-bottom:12px;}
+.modal-actions{display:flex; gap:10px; margin-top:16px; justify-content:flex-end;}
+
+.toast{
+  position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:300;
+  background:var(--plum-deep); color:#fff; padding:12px 20px; border-radius:12px; font-weight:700; font-size:13px;
+  box-shadow:0 10px 30px rgba(0,0,0,.3); max-width:90%; text-align:center;
+}
+
+.empty{text-align:center; padding:40px 16px; color:var(--ink-soft);}
+.empty .ic{font-size:34px; margin-bottom:8px;}
+
+.report-card{border:1px solid var(--line); border-radius:14px; padding:18px; margin-bottom:14px; background:#fff;}
+.report-card h4{font-family:'Cormorant Garamond',serif; font-size:19px; margin:0 0 10px; color:var(--plum);}
+.report-line{display:flex; justify-content:space-between; font-size:13.5px; padding:3px 0; border-bottom:1px dashed var(--line);}
+.report-line:last-child{border-bottom:none;}
+
+@media (max-width:640px){
+  .h1{font-size:25px;}
+  .grid-stats{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-badge" id="brandBadge">1Б</div>
+    <div class="brand-text">
+      <div class="t1" id="schoolNameHeader">Электронный дневник</div>
+      <div class="t2" id="classNameHeader">1 «Б» класс</div>
+    </div>
+  </div>
+  <select class="month-select" id="monthSelect"></select>
+  <div style="display:flex; align-items:center; gap:6px;">
+    <div class="save-dot" id="saveDot"></div>
+    <span class="save-label" id="saveLabel">сохранено</span>
+  </div>
+</div>
+
+<div class="tabs" id="tabs">
+  <button class="tab" data-view="dashboard">Главная</button>
+  <button class="tab" data-view="students">Ученики</button>
+  <button class="tab" data-view="attendance">Посещаемость</button>
+  <button class="tab" data-view="grades">Оценки</button>
+  <button class="tab" data-view="stats">Статистика</button>
+  <button class="tab" data-view="summary">Итоги месяца</button>
+  <button class="tab" data-view="settings">Настройки</button>
+</div>
+
+<div class="container" id="app"></div>
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+
+<script>
+/* ============================================================
+   ДАННЫЕ / КОНСТАНТЫ
+============================================================ */
+const STORAGE_KEY = "dnevnik-1b-v1";
+
+const MONTHS = [
+  {key:"Сентябрь", year:2026, m:8},
+  {key:"Октябрь",  year:2026, m:9},
+  {key:"Ноябрь",   year:2026, m:10},
+  {key:"Декабрь",  year:2026, m:11},
+  {key:"Январь",   year:2027, m:0},
+  {key:"Февраль",  year:2027, m:1},
+  {key:"Март",     year:2027, m:2},
+  {key:"Апрель",   year:2027, m:3},
+  {key:"Май",      year:2027, m:4},
+];
+function daysInMonth(monthKey){
+  const mm = MONTHS.find(x=>x.key===monthKey);
+  return new Date(mm.year, mm.m+1, 0).getDate();
+}
+
+const STATUS = {
+  present:   {sym:"✓", cls:"present",   label:"присутствовал",              color:"var(--sage)"},
+  excused:   {sym:"*", cls:"excused",   label:"отсутствовал (уважительно)", color:"var(--gold)"},
+  unexcused: {sym:"−", cls:"unexcused", label:"отсутствовал (неуважительно)",color:"var(--rose)"},
+  late:      {sym:"О", cls:"late",      label:"опоздал",                    color:"var(--blue)"},
+};
+const STATUS_ORDER = ["present","excused","unexcused","late"];
+
+function uid(prefix){ return prefix + "_" + Math.random().toString(36).slice(2,9) + Date.now().toString(36).slice(-4); }
+
+const SEED_STUDENTS = [
+  ["Абдурахимова","Оиша","915369603"],
+  ["Боходиров","Аюбхон","909930610 / 909018901"],
+  ["Ирисов","Мухаммад Али","991380048"],
+  ["Ирисов","Мухаммад Умар","991380048"],
+  ["Кариев","Саидмусъаб","337701101 / 990001331"],
+  ["Каримов","Мирмухаммад","946953534 / 943197722"],
+  ["Маджидов","Амирбек","990868007 / 909080818"],
+  ["Мирзаходжаева","Нилуфархон","991549944 / 900105444"],
+  ["Мирхусанова","Мадинабону","772370101 / 777676996 / 998174665 / 909696632"],
+  ["Орифжонова","Феруза","971399404"],
+  ["Пулатова","Ясина","987170712"],
+  ["Пулатов","Сулаймон","987170712"],
+  ["Пулатов","Яхё","987170712"],
+  ["Рузикулов","Шохзамон","908942020 / 972455595"],
+  ["Убайдуллаев","Мухаммадризо",""],
+  ["Фахриддинов","Имронбек","998393240 / 998953240"],
+  ["Шокиров","Абдулхафиз","905507810 / 903055767"],
+  ["Эргашбоев","Мухаммадсултон","977779433 / 981070507"],
+  ["Эркинов","Имрон","991200012 / 990100012"],
+  ["Юлдошева","Адибахон","919595545"],
+].map((row, i)=>({ id: uid("st"), last: row[0], first: row[1], patronymic: "", number: i+1, phone: row[2] }));
+
+function defaultState(){
+  return {
+    schoolName: "Renessans School",
+    className: "1 «Б»",
+    students: SEED_STUDENTS.map(s=>({...s})),
+    subjects: [
+      {id:"subj_matem", name:"Математика", active:true},
+      {id:"subj_bukvar", name:"Букварь", active:true},
+      {id:"subj_rus", name:"Русский язык", active:true},
+      {id:"subj_pismo", name:"Письмо", active:true},
+    ],
+    attendance: {},   // { monthKey: { studentId: { day: statusKey } } }
+    grades: [],        // [{id, studentId, monthKey, day, subjectId, value}]
+    schoolDaysOverride: {}, // { monthKey: number|null }
+    selectedMonth: "Сентябрь",
+  };
+}
+
+let state = defaultState();
+let currentView = "dashboard";
+let currentStudentId = null;
+let saveTimer = null;
+let saving = false;
+
+/* ============================================================
+   ПЕРСИСТЕНТНОСТЬ
+============================================================ */
+async function loadState(){
+  try{
+    const res = await window.storage.get(STORAGE_KEY, false);
+    if(res && res.value){
+      const loaded = JSON.parse(res.value);
+      state = Object.assign(defaultState(), loaded);
+      if(!loaded.students || loaded.students.length===0){
+        state.students = SEED_STUDENTS.map(s=>({...s}));
+      }
+    }
+  }catch(e){
+    // нет сохранённых данных — начинаем с чистого состояния
+  }
+  render();
+}
+
+function scheduleSave(){
+  setSaveStatus("saving");
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(doSave, 500);
+}
+async function doSave(){
+  try{
+    const res = await window.storage.set(STORAGE_KEY, JSON.stringify(state), false);
+    if(res){ setSaveStatus("ok"); } else { setSaveStatus("error"); retrySave(); }
+  }catch(e){ setSaveStatus("error"); retrySave(); }
+}
+let retryTimer = null;
+function retrySave(){
+  clearTimeout(retryTimer);
+  retryTimer = setTimeout(doSave, 4000);
+}
+function setSaveStatus(s){
+  const dot = document.getElementById("saveDot");
+  const lbl = document.getElementById("saveLabel");
+  if(!dot) return;
+  dot.className = "save-dot" + (s==="saving"?" saving":s==="error"?" error":"");
+  lbl.textContent = s==="saving" ? "сохранение…" : s==="error" ? "не сохранено — повтор…" : "сохранено";
+}
+
+function commit(){ scheduleSave(); render(); }
+
+/* ============================================================
+   ВСПОМОГАТЕЛЬНЫЕ РАСЧЁТЫ
+============================================================ */
+function fullName(s){
+  return [s.last, s.first, s.patronymic].filter(Boolean).join(" ");
+}
+function shortName(s){
+  const initials = [s.first, s.patronymic].filter(Boolean).map(x=>x[0]+".").join("");
+  return `${s.last} ${initials}`;
+}
+function activeSubjects(){ return state.subjects.filter(x=>x.active); }
+
+function monthAttendance(monthKey){ return state.attendance[monthKey] || {}; }
+
+function markedDaysForMonth(monthKey){
+  const att = monthAttendance(monthKey);
+  const daysSet = new Set();
+  Object.values(att).forEach(byDay=>{
+    Object.keys(byDay).forEach(d=>daysSet.add(Number(d)));
+  });
+  return Array.from(daysSet).sort((a,b)=>a-b);
+}
+function schoolDaysCount(monthKey){
+  const override = state.schoolDaysOverride[monthKey];
+  if(override && override>0) return override;
+  const marked = markedDaysForMonth(monthKey);
+  return marked.length;
+}
+
+function studentAttendanceStats(studentId, monthKey){
+  const att = (monthAttendance(monthKey)[studentId]) || {};
+  let present=0, excused=0, unexcused=0, late=0;
+  Object.values(att).forEach(st=>{
+    if(st==="present") present++;
+    else if(st==="excused") excused++;
+    else if(st==="unexcused") unexcused++;
+    else if(st==="late") late++;
+  });
+  const schoolDays = schoolDaysCount(monthKey);
+  const presentEffective = present + late; // опоздал = присутствовал, но с опозданием
+  const totalAbsent = excused + unexcused;
+  const pct = schoolDays>0 ? (presentEffective/schoolDays*100) : null;
+  return {present, excused, unexcused, late, totalAbsent, schoolDays, pct};
+}
+
+function studentGrades(studentId, monthKey){
+  return state.grades.filter(g=>g.studentId===studentId && g.monthKey===monthKey);
+}
+function studentGradeStats(studentId, monthKey){
+  const gs = studentGrades(studentId, monthKey);
+  const counts = {2:0,3:0,4:0,5:0};
+  gs.forEach(g=>counts[g.value]++);
+  const bySubject = {};
+  activeSubjects().forEach(sub=>{
+    const list = gs.filter(g=>g.subjectId===sub.id);
+    if(list.length){
+      const avg = list.reduce((a,g)=>a+g.value,0)/list.length;
+      bySubject[sub.id] = {name:sub.name, avg, count:list.length};
+    }
+  });
+  const allVals = gs.map(g=>g.value);
+  const overallAvg = allVals.length ? allVals.reduce((a,b)=>a+b,0)/allVals.length : null;
+  let best=null, worst=null;
+  Object.values(bySubject).forEach(s=>{
+    if(!best || s.avg>best.avg) best=s;
+    if(!worst || s.avg<worst.avg) worst=s;
+  });
+  return {counts, bySubject, overallAvg, best, worst, total:gs.length};
+}
+
+function classAttendanceOverview(monthKey){
+  const schoolDays = schoolDaysCount(monthKey);
+  let sumPct=0, cnt=0, totalAbsent=0, totalLate=0;
+  let best=null, worst=null;
+  state.students.forEach(s=>{
+    const st = studentAttendanceStats(s.id, monthKey);
+    if(st.pct!=null){ sumPct+=st.pct; cnt++; }
+    totalAbsent += st.totalAbsent;
+    totalLate += st.late;
+    if(st.pct!=null){
+      if(!best || st.pct>best.pct) best={student:s, pct:st.pct};
+      if(!worst || st.pct<worst.pct) worst={student:s, pct:st.pct};
+    }
+  });
+  return {avgPct: cnt? sumPct/cnt : null, totalAbsent, totalLate, best, worst, schoolDays};
+}
+
+function classGradeOverview(monthKey){
+  const counts={2:0,3:0,4:0,5:0};
+  const bySubject = {};
+  activeSubjects().forEach(sub=>bySubject[sub.id]={name:sub.name, sum:0, count:0});
+  let sum=0, total=0;
+  state.grades.filter(g=>g.monthKey===monthKey).forEach(g=>{
+    counts[g.value]++;
+    sum+=g.value; total++;
+    if(bySubject[g.subjectId]){ bySubject[g.subjectId].sum+=g.value; bySubject[g.subjectId].count++; }
+  });
+  const subjectAverages = Object.values(bySubject).filter(s=>s.count>0).map(s=>({name:s.name, avg:s.sum/s.count}));
+  return {counts, subjectAverages, avg: total? sum/total : null, total};
+}
+
+function needsAttention(monthKey){
+  return state.students.filter(s=>{
+    const att = studentAttendanceStats(s.id, monthKey);
+    const gr = studentGradeStats(s.id, monthKey);
+    const lowAtt = att.pct!=null && att.pct < 80;
+    const lowGrade = gr.overallAvg!=null && gr.overallAvg < 3.4;
+    return lowAtt || lowGrade;
+  });
+}
+
+/* ============================================================
+   UI HELPERS
+============================================================ */
+function el(html){ const d=document.createElement("div"); d.innerHTML=html.trim(); return d.firstChild; }
+function esc(s){ return (s||"").toString().replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function fmtPct(v){ return v==null ? "—" : v.toFixed(1)+"%"; }
+function fmtAvg(v){ return v==null ? "—" : v.toFixed(2); }
+function toast(msg){
+  const root = document.getElementById("toastRoot");
+  root.innerHTML = "";
+  const t = el(`<div class="toast">${esc(msg)}</div>`);
+  root.appendChild(t);
+  setTimeout(()=>{ if(root.contains(t)) root.removeChild(t); }, 2200);
+}
+function closeModal(){ document.getElementById("modalRoot").innerHTML=""; }
+function openModal(html){
+  const root = document.getElementById("modalRoot");
+  root.innerHTML = `<div class="modal-backdrop" id="modalBackdrop"><div class="modal">${html}</div></div>`;
+  document.getElementById("modalBackdrop").addEventListener("click", (e)=>{ if(e.target.id==="modalBackdrop") closeModal(); });
+}
+
+/* ============================================================
+   РЕНДЕР: НАВИГАЦИЯ / ШАПКА
+============================================================ */
+function classBadge(name){
+  return (name||"").replace(/[«»\s]/g,"").slice(0,4) || "•";
+}
+function renderChrome(){
+  document.getElementById("classNameHeader").textContent = state.className + " класс";
+  document.getElementById("schoolNameHeader").textContent = state.schoolName || "Электронный дневник";
+  document.getElementById("brandBadge").textContent = classBadge(state.className);
+  const ms = document.getElementById("monthSelect");
+  ms.innerHTML = MONTHS.map(m=>`<option value="${m.key}" ${m.key===state.selectedMonth?"selected":""}>${m.key}</option>`).join("");
+  document.querySelectorAll(".tab").forEach(t=>{
+    t.classList.toggle("active", t.dataset.view===currentView);
+  });
+}
+
+/* ============================================================
+   ГЛАВНАЯ
+============================================================ */
+function renderDashboard(){
+  const mk = state.selectedMonth;
+  const attOv = classAttendanceOverview(mk);
+  const grOv = classGradeOverview(mk);
+  const schoolDays = schoolDaysCount(mk);
+
+  // "текущий день" — реальная дата, если попадает в выбранный месяц, иначе последний отмеченный день
+  const now = new Date();
+  const mm = MONTHS.find(x=>x.key===mk);
+  const marked = markedDaysForMonth(mk);
+  let todayDay = (now.getFullYear()===mm.year && now.getMonth()===mm.m) ? now.getDate() : (marked.length ? marked[marked.length-1] : null);
+
+  let present=0, absent=0, late=0, none=0;
+  if(todayDay){
+    state.students.forEach(s=>{
+      const st = (state.attendance[mk]?.[s.id]?.[todayDay]) || null;
+      if(st==="present") present++;
+      else if(st==="late") late++;
+      else if(st==="excused"||st==="unexcused") absent++;
+      else none++;
+    });
+  }
+
+  const fives = state.grades.filter(g=>g.monthKey===mk && g.value===5).length;
+
+  const html = `
+    <div class="card">
+      <div class="h1">Класс ${esc(state.className)}</div>
+      <div class="muted">${esc(state.schoolName||"")} · Учебный год 2026–2027 · ${esc(mk)} · учебных дней в месяце: ${schoolDays || "не отмечено"}</div>
+
+      <div class="grid-stats section-gap">
+        <div class="stat-box"><div class="val">${state.students.length}</div><div class="lbl">Учеников</div></div>
+        <div class="stat-box"><div class="val">${schoolDays || "—"}</div><div class="lbl">Учебных дней</div></div>
+        <div class="stat-box sage"><div class="val">${todayDay? present : "—"}</div><div class="lbl">Присутствуют${todayDay? " ("+todayDay+" числа)":""}</div></div>
+        <div class="stat-box rose"><div class="val">${todayDay? absent : "—"}</div><div class="lbl">Отсутствуют</div></div>
+        <div class="stat-box gold"><div class="val">${todayDay? late : "—"}</div><div class="lbl">Опоздали</div></div>
+        <div class="stat-box plum"><div class="val">${fmtPct(attOv.avgPct)}</div><div class="lbl">Посещаемость класса</div></div>
+        <div class="stat-box plum"><div class="val">${fmtAvg(grOv.avg)}</div><div class="lbl">Средний балл класса</div></div>
+        <div class="stat-box gold"><div class="val">${fives}</div><div class="lbl">Пятёрок за месяц</div></div>
+      </div>
+
+      <div class="quick-grid">
+        <button class="quick-btn" data-action="nav" data-view="attendance"><span class="ic">📋</span><span class="lbl">Отметить посещаемость</span></button>
+        <button class="quick-btn" data-action="nav" data-view="grades"><span class="ic">✏️</span><span class="lbl">Поставить оценки</span></button>
+        <button class="quick-btn" data-action="openAddStudent"><span class="ic">➕</span><span class="lbl">Добавить ученика</span></button>
+        <button class="quick-btn" data-action="nav" data-view="stats"><span class="ic">📊</span><span class="lbl">Посмотреть статистику</span></button>
+        <button class="quick-btn" data-action="nav" data-view="summary"><span class="ic">🗂️</span><span class="lbl">Итоги месяца</span></button>
+      </div>
+    </div>
+  `;
+  document.getElementById("app").innerHTML = html;
+}
+
+/* ============================================================
+   УЧЕНИКИ
+============================================================ */
+let studentSearch = "";
+function renderStudents(){
+  const filtered = state.students.filter(s=>{
+    if(!studentSearch) return true;
+    return fullName(s).toLowerCase().includes(studentSearch.toLowerCase());
+  }).sort((a,b)=>(a.number||0)-(b.number||0));
+
+  const rows = filtered.length ? filtered.map(s=>`
+    <div class="student-row">
+      <div class="student-num">${s.number ?? "—"}</div>
+      <div class="student-name" data-action="openCard" data-id="${s.id}">${esc(fullName(s))}${s.phone ? `<div class="muted" style="font-weight:600; margin-top:2px;">${esc(s.phone)}</div>` : ""}</div>
+      <div class="row-actions">
+        <button class="icon-btn" data-action="editStudent" data-id="${s.id}" title="Изменить">✎</button>
+        <button class="icon-btn" data-action="deleteStudent" data-id="${s.id}" title="Удалить">🗑</button>
+      </div>
+    </div>
+  `).join("") : `<div class="empty"><div class="ic">🧒</div>Учеников пока нет — добавьте первого.</div>`;
+
+  document.getElementById("app").innerHTML = `
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div class="h1" style="margin:0;">Ученики</div>
+        <button class="btn btn-primary" data-action="openAddStudent">+ Добавить ученика</button>
+      </div>
+      <div class="search-row section-gap">
+        <input class="search-input" id="studentSearchInput" placeholder="Поиск по фамилии или имени…" value="${esc(studentSearch)}">
+      </div>
+      <div>${rows}</div>
+    </div>
+  `;
+  const si = document.getElementById("studentSearchInput");
+  si.addEventListener("input", (e)=>{ studentSearch = e.target.value; renderStudents(); si.focus(); si.setSelectionRange(si.value.length, si.value.length); });
+}
+
+function openAddStudentModal(){
+  openModal(`
+    <h3>Добавить ученика</h3>
+    <div class="field"><label>Фамилия</label><input id="fLast" placeholder="Фамилия"></div>
+    <div class="field"><label>Имя</label><input id="fFirst" placeholder="Имя"></div>
+    <div class="field"><label>Отчество (необязательно)</label><input id="fPatr" placeholder="Отчество"></div>
+    <div class="field"><label>Телефон родителей</label><input id="fPhone" placeholder="998 90 000 00 00"></div>
+    <div class="field"><label>№ по списку</label><input id="fNum" type="number" placeholder="${state.students.length+1}"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" data-action="closeModal">Отмена</button>
+      <button class="btn btn-primary" data-action="saveNewStudent">Добавить</button>
+    </div>
+  `);
+  document.getElementById("fLast").focus();
+}
+function saveNewStudent(){
+  const last = document.getElementById("fLast").value.trim();
+  const first = document.getElementById("fFirst").value.trim();
+  const patr = document.getElementById("fPatr").value.trim();
+  const phone = document.getElementById("fPhone").value.trim();
+  const numRaw = document.getElementById("fNum").value.trim();
+  if(!last || !first){ toast("Укажите фамилию и имя"); return; }
+  const num = numRaw ? Number(numRaw) : (state.students.length+1);
+  state.students.push({id:uid("st"), last, first, patronymic:patr, number:num, phone});
+  closeModal();
+  toast("Ученик добавлен");
+  commit();
+}
+
+function openBulkAddStudents(){
+  openModal(`
+    <h3>Добавить несколько учеников</h3>
+    <div class="muted" style="margin-bottom:10px;">По одному ученику на строку: <b>Фамилия Имя — телефон</b> (телефон необязателен). Номера по списку присвоятся по порядку.</div>
+    <div class="field">
+      <textarea id="bulkStudentsInput" rows="8" placeholder="Иванова Анна — 901234567
+Петров Иван
+Сидорова Мария — 998900011122 / 998900033344" style="width:100%; border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-size:14px; font-family:inherit; resize:vertical;"></textarea>
+    </div>
+    <div id="bulkPreview" class="muted" style="margin-top:6px;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" data-action="closeModal">Отмена</button>
+      <button class="btn btn-primary" data-action="saveBulkStudents">Добавить всех</button>
+    </div>
+  `);
+  const ta = document.getElementById("bulkStudentsInput");
+  ta.addEventListener("input", ()=>{
+    const parsed = parseBulkStudents(ta.value);
+    document.getElementById("bulkPreview").textContent = parsed.length ? `Будет добавлено: ${parsed.length}` : "";
+  });
+  ta.focus();
+}
+function parseBulkStudents(text){
+  return text.split("\n").map(l=>l.trim()).filter(Boolean).map(line=>{
+    let phone = "";
+    let namePart = line;
+    const dashMatch = line.match(/\s[—-]\s/);
+    if(dashMatch){
+      const idx = line.indexOf(dashMatch[0]);
+      namePart = line.slice(0, idx).trim();
+      phone = line.slice(idx + dashMatch[0].length).trim();
+    }
+    const parts = namePart.split(/\s+/).filter(Boolean);
+    const last = parts[0] || "";
+    const first = parts.slice(1).join(" ") || "";
+    return {last, first, phone};
+  }).filter(s => s.last && s.first);
+}
+function saveBulkStudents(){
+  const ta = document.getElementById("bulkStudentsInput");
+  const parsed = parseBulkStudents(ta.value);
+  if(!parsed.length){ toast("Не удалось распознать ни одного ученика — проверьте формат"); return; }
+  let nextNum = state.students.reduce((max,s)=>Math.max(max, s.number||0), 0) + 1;
+  parsed.forEach(p=>{
+    state.students.push({id:uid("st"), last:p.last, first:p.first, patronymic:"", number:nextNum, phone:p.phone});
+    nextNum++;
+  });
+  closeModal();
+  toast(`Добавлено учеников: ${parsed.length}`);
+  commit();
+}
+
+function openEditStudentModal(id){
+  const s = state.students.find(x=>x.id===id);
+  if(!s) return;
+  openModal(`
+    <h3>Изменить данные</h3>
+    <div class="field"><label>Фамилия</label><input id="fLast" value="${esc(s.last)}"></div>
+    <div class="field"><label>Имя</label><input id="fFirst" value="${esc(s.first)}"></div>
+    <div class="field"><label>Отчество</label><input id="fPatr" value="${esc(s.patronymic||"")}"></div>
+    <div class="field"><label>Телефон родителей</label><input id="fPhone" value="${esc(s.phone||"")}" placeholder="998 90 000 00 00"></div>
+    <div class="field"><label>№ по списку</label><input id="fNum" type="number" value="${s.number ?? ""}"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" data-action="closeModal">Отмена</button>
+      <button class="btn btn-primary" data-action="saveEditStudent" data-id="${id}">Сохранить</button>
+    </div>
+  `);
+}
+function saveEditStudent(id){
+  const s = state.students.find(x=>x.id===id);
+  if(!s) return;
+  const last = document.getElementById("fLast").value.trim();
+  const first = document.getElementById("fFirst").value.trim();
+  if(!last || !first){ toast("Укажите фамилию и имя"); return; }
+  s.last=last; s.first=first;
+  s.patronymic=document.getElementById("fPatr").value.trim();
+  s.phone=document.getElementById("fPhone").value.trim();
+  const numRaw = document.getElementById("fNum").value.trim();
+  s.number = numRaw ? Number(numRaw) : s.number;
+  closeModal();
+  toast("Данные обновлены");
+  commit();
+}
+function deleteStudent(id){
+  const s = state.students.find(x=>x.id===id);
+  if(!s) return;
+  openModal(`
+    <h3>Удалить ученика?</h3>
+    <p class="muted">${esc(fullName(s))} — вместе с учеником удалятся все его оценки и отметки посещаемости. Действие необратимо.</p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" data-action="closeModal">Отмена</button>
+      <button class="btn btn-danger" data-action="confirmDeleteStudent" data-id="${id}">Удалить</button>
+    </div>
+  `);
+}
+function confirmDeleteStudent(id){
+  state.students = state.students.filter(x=>x.id!==id);
+  state.grades = state.grades.filter(g=>g.studentId!==id);
+  Object.keys(state.attendance).forEach(mk=>{ delete state.attendance[mk][id]; });
+  closeModal();
+  toast("Ученик удалён");
+  if(currentStudentId===id){ currentView="students"; currentStudentId=null; }
+  commit();
+}
+
+/* ============================================================
+   ПОСЕЩАЕМОСТЬ
+============================================================ */
+function renderAttendance(){
+  const mk = state.selectedMonth;
+  const nDays = daysInMonth(mk);
+  const students = [...state.students].sort((a,b)=>(a.number||0)-(b.number||0));
+
+  const legend = STATUS_ORDER.map(k=>{
+    const s = STATUS[k];
+    return `<span><i style="background:${s.color}">${s.sym}</i>${s.label}</span>`;
+  }).join("");
+
+  let head = `<th class="namecell">Ученик</th>`;
+  for(let d=1; d<=nDays; d++) head += `<th>${d}</th>`;
+
+  let body = "";
+  if(!students.length){
+    body = `<tr><td colspan="${nDays+1}"><div class="empty">Сначала добавьте учеников на вкладке «Ученики».</div></td></tr>`;
+  } else {
+    students.forEach(s=>{
+      let row = `<tr><td class="namecell">${esc(shortName(s))}</td>`;
+      for(let d=1; d<=nDays; d++){
+        const st = state.attendance[mk]?.[s.id]?.[d];
+        const info = st ? STATUS[st] : null;
+        row += `<td class="att-cell ${info?info.cls:""}" data-action="cellClick" data-student="${s.id}" data-day="${d}">${info?info.sym:""}</td>`;
+      }
+      row += `</tr>`;
+      body += row;
+    });
+  }
+
+  document.getElementById("app").innerHTML = `
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div class="h1" style="margin:0;">Посещаемость — ${esc(mk)}</div>
+        <button class="btn btn-soft" data-action="markAllPresent" ${students.length?"":"disabled"}>✓ Отметить весь класс присутствующими</button>
+      </div>
+      <div class="legend section-gap">${legend}</div>
+      <div class="att-scroll">
+        <table class="att-table">
+          <thead><tr>${head}</tr></thead>
+          <tbody>${body}</tbody>
+        </table>
+      </div>
+      <div class="muted section-gap">Нажмите на ячейку, чтобы выбрать статус. Учебных дней отмечено: ${markedDaysForMonth(mk).length}${state.schoolDaysOverride[mk]?` (переопределено вручную: ${state.schoolDaysOverride[mk]})`:""}.</div>
+    </div>
+  `;
+}
+
+function markAllPresent(){
+  const mk = state.selectedMonth;
+  const now = new Date();
+  const mm = MONTHS.find(x=>x.key===mk);
+  const day = (now.getFullYear()===mm.year && now.getMonth()===mm.m) ? now.getDate() : 1;
+  if(!state.attendance[mk]) state.attendance[mk] = {};
+  state.students.forEach(s=>{
+    if(!state.attendance[mk][s.id]) state.attendance[mk][s.id] = {};
+    state.attendance[mk][s.id][day] = "present";
+  });
+  toast(`Весь класс отмечен присутствующим на ${day} число`);
+  commit();
+}
+
+function openAttendancePopover(cellEl, studentId, day){
+  closeAttendancePopover();
+  const rect = cellEl.getBoundingClientRect();
+  const root = document.getElementById("modalRoot");
+  const backdrop = el(`<div class="popover-backdrop" id="attPopBackdrop"></div>`);
+  const pop = el(`<div class="popover" id="attPop"></div>`);
+  STATUS_ORDER.forEach(k=>{
+    const s = STATUS[k];
+    const b = el(`<button class="pop-btn" style="background:${s.color}" title="${s.label}">${s.sym}</button>`);
+    b.addEventListener("click", ()=>{ setAttendance(studentId, day, k); closeAttendancePopover(); });
+    pop.appendChild(b);
+  });
+  const clearBtn = el(`<button class="pop-btn pop-clear" title="Очистить">✕</button>`);
+  clearBtn.addEventListener("click", ()=>{ setAttendance(studentId, day, null); closeAttendancePopover(); });
+  pop.appendChild(clearBtn);
+
+  root.appendChild(backdrop);
+  root.appendChild(pop);
+  const top = rect.bottom + window.scrollY + 6;
+  let left = rect.left + window.scrollX - 10;
+  const maxLeft = window.scrollX + document.documentElement.clientWidth - 250;
+  if(left > maxLeft) left = maxLeft;
+  if(left < 8) left = 8;
+  pop.style.top = top+"px";
+  pop.style.left = left+"px";
+  backdrop.addEventListener("click", closeAttendancePopover);
+}
+function closeAttendancePopover(){
+  const root = document.getElementById("modalRoot");
+  const b = document.getElementById("attPopBackdrop");
+  const p = document.getElementById("attPop");
+  if(b) root.removeChild(b);
+  if(p) root.removeChild(p);
+}
+function setAttendance(studentId, day, statusKey){
+  const mk = state.selectedMonth;
+  if(!state.attendance[mk]) state.attendance[mk] = {};
+  if(!state.attendance[mk][studentId]) state.attendance[mk][studentId] = {};
+  if(statusKey){
+    state.attendance[mk][studentId][day] = statusKey;
+  } else {
+    delete state.attendance[mk][studentId][day];
+  }
+  commit();
+}
+
+/* ============================================================
+   ОЦЕНКИ
+============================================================ */
+let gradeForm = {studentId:"", day:"", subjectId:"", value:null};
+let gradeFilterStudent = "all", gradeFilterSubject = "all";
+
+function renderGrades(){
+  const mk = state.selectedMonth;
+  const subs = activeSubjects();
+  const students = [...state.students].sort((a,b)=>(a.number||0)-(b.number||0));
+
+  if(!gradeForm.studentId && students.length) gradeForm.studentId = students[0].id;
+  if(!gradeForm.subjectId && subs.length) gradeForm.subjectId = subs[0].id;
+
+  const studentOptions = students.map(s=>`<option value="${s.id}" ${gradeForm.studentId===s.id?"selected":""}>${esc(shortName(s))}</option>`).join("");
+  const subjectOptions = subs.map(s=>`<option value="${s.id}" ${gradeForm.subjectId===s.id?"selected":""}>${esc(s.name)}</option>`).join("");
+
+  const gradeButtons = [2,3,4,5].map(v=>`<button class="g${v} ${gradeForm.value===v?"active":""}" data-action="pickGrade" data-value="${v}">${v}</button>`).join("");
+
+  // фильтры лога
+  const filterStudentOpts = `<option value="all">Все ученики</option>` + students.map(s=>`<option value="${s.id}" ${gradeFilterStudent===s.id?"selected":""}>${esc(shortName(s))}</option>`).join("");
+  const filterSubjectOpts = `<option value="all">Все предметы</option>` + subs.map(s=>`<option value="${s.id}" ${gradeFilterSubject===s.id?"selected":""}>${esc(s.name)}</option>`).join("");
+
+  let log = state.grades.filter(g=>g.monthKey===mk);
+  if(gradeFilterStudent!=="all") log = log.filter(g=>g.studentId===gradeFilterStudent);
+  if(gradeFilterSubject!=="all") log = log.filter(g=>g.subjectId===gradeFilterSubject);
+  log = log.slice().sort((a,b)=> b.day-a.day);
+
+  const logHtml = log.length ? log.map(g=>{
+    const st = state.students.find(x=>x.id===g.studentId);
+    const sub = state.subjects.find(x=>x.id===g.subjectId);
+    return `
+      <div class="log-row">
+        <div class="grade-chip g${g.value}">${g.value}</div>
+        <div class="log-main">
+          <div>${esc(st?shortName(st):"—")}</div>
+          <div class="log-sub">${esc(sub?sub.name:"—")} · ${g.day} ${esc(mk).toLowerCase()}</div>
+        </div>
+        <button class="icon-btn" data-action="deleteGrade" data-id="${g.id}" title="Удалить">🗑</button>
+      </div>`;
+  }).join("") : `<div class="empty">Оценок пока нет</div>`;
+
+  document.getElementById("app").innerHTML = `
+    <div class="card">
+      <div class="h1">Поставить оценку</div>
+      <div class="muted">${esc(mk)}</div>
+      ${!students.length? `<div class="empty section-gap">Сначала добавьте учеников.</div>` : !subs.length ? `<div class="empty section-gap">Включите хотя бы один предмет в настройках.</div>` : `
+      <div class="grade-form section-gap">
+        <div class="field"><label>Ученик</label><select id="gStudent">${studentOptions}</select></div>
+        <div class="field"><label>День месяца</label><input id="gDay" type="number" min="1" max="${daysInMonth(mk)}" value="${gradeForm.day || (new Date().getDate())}"></div>
+        <div class="field"><label>Предмет</label><select id="gSubject">${subjectOptions}</select></div>
+        <div class="field"><label>Оценка</label><div class="grade-pick">${gradeButtons}</div></div>
+      </div>
+      <button class="btn btn-primary section-gap" data-action="addGrade">+ Добавить оценку</button>
+      `}
+    </div>
+
+    <div class="card section-gap">
+      <div class="h2">История оценок — ${esc(mk)}</div>
+      <div class="filter-row">
+        <select class="chip-select" id="filterStudent">${filterStudentOpts}</select>
+        <select class="chip-select" id="filterSubject">${filterSubjectOpts}</select>
+      </div>
+      <div>${logHtml}</div>
+    </div>
+  `;
+
+  const gs = document.getElementById("gStudent"); if(gs) gs.addEventListener("change", e=>{ gradeForm.studentId=e.target.value; });
+  const gd = document.getElementById("gDay"); if(gd) gd.addEventListener("change", e=>{ gradeForm.day=Number(e.target.value); });
+  const gsub = document.getElementById("gSubject"); if(gsub) gsub.addEventListener("change", e=>{ gradeForm.subjectId=e.target.value; });
+  const fs = document.getElementById("filterStudent"); if(fs) fs.addEventListener("change", e=>{ gradeFilterStudent=e.target.value; renderGrades(); });
+  const fsub = document.getElementById("filterSubject"); if(fsub) fsub.addEventListener("change", e=>{ gradeFilterSubject=e.target.value; renderGrades(); });
+}
+function pickGrade(v){ gradeForm.value = v; renderGrades(); }
+function addGrade(){
+  const mk = state.selectedMonth;
+  const dayEl = document.getElementById("gDay");
+  const day = dayEl ? Number(dayEl.value) : null;
+  if(!gradeForm.studentId){ toast("Выберите ученика"); return; }
+  if(!gradeForm.subjectId){ toast("Выберите предмет"); return; }
+  if(!day || day<1 || day>daysInMonth(mk)){ toast("Укажите корректный день месяца"); return; }
+  if(!gradeForm.value){ toast("Выберите оценку 2, 3, 4 или 5"); return; }
+  state.grades.push({id:uid("gr"), studentId:gradeForm.studentId, monthKey:mk, day, subjectId:gradeForm.subjectId, value:gradeForm.value});
+  toast("Оценка добавлена");
+  gradeForm.value = null;
+  commit();
+}
+function deleteGrade(id){
+  state.grades = state.grades.filter(g=>g.id!==id);
+  toast("Оценка удалена");
+  commit();
+}
+
+/* ============================================================
+   СТАТИСТИКА КЛАССА
+============================================================ */
+function renderStats(){
+  const mk = state.selectedMonth;
+  const attOv = classAttendanceOverview(mk);
+  const grOv = classGradeOverview(mk);
+  const attention = needsAttention(mk);
+  const students = [...state.students].sort((a,b)=>(a.number||0)-(b.number||0));
+
+  const subjectBars = grOv.subjectAverages.length ? grOv.subjectAverages.map(s=>`
+    <div class="subject-bar-row">
+      <div class="name">${esc(s.name)}</div>
+      <div class="subject-bar-track"><div class="subject-bar-fill" style="width:${Math.min(100,s.avg/5*100)}%"></div></div>
+      <div class="subject-bar-val">${fmtAvg(s.avg)}</div>
+    </div>`).join("") : `<div class="empty">Оценок пока нет</div>`;
+
+  const attentionHtml = attention.length ? attention.map(s=>{
+    const a = studentAttendanceStats(s.id, mk); const g = studentGradeStats(s.id, mk);
+    return `<div class="log-row"><div class="log-main"><div style="font-weight:700;">${esc(fullName(s))}</div>
+      <div class="log-sub">Посещаемость: ${fmtPct(a.pct)} · Средний балл: ${fmtAvg(g.overallAvg)}</div></div></div>`;
+  }).join("") : `<div class="empty">Все ученики в норме</div>`;
+
+  document.getElementById("app").innerHTML = `
+    <div class="card">
+      <div class="h1">Статистика класса — ${esc(mk)}</div>
+      <div class="grid-stats section-gap">
+        <div class="stat-box plum"><div class="val">${fmtPct(attOv.avgPct)}</div><div class="lbl">Средняя посещаемость</div></div>
+        <div class="stat-box rose"><div class="val">${attOv.totalAbsent}</div><div class="lbl">Пропусков всего</div></div>
+        <div class="stat-box gold"><div class="val">${attOv.totalLate}</div><div class="lbl">Опозданий всего</div></div>
+        <div class="stat-box plum"><div class="val">${fmtAvg(grOv.avg)}</div><div class="lbl">Средний балл класса</div></div>
+      </div>
+      <div class="grid-stats section-gap">
+        <div class="stat-box sage"><div class="val">${grOv.counts[5]}</div><div class="lbl">Пятёрок</div></div>
+        <div class="stat-box blue"><div class="val">${grOv.counts[4]}</div><div class="lbl">Четвёрок</div></div>
+        <div class="stat-box gold"><div class="val">${grOv.counts[3]}</div><div class="lbl">Троек</div></div>
+        <div class="stat-box rose"><div class="val">${grOv.counts[2]}</div><div class="lbl">Двоек</div></div>
+      </div>
+    </div>
+
+    <div class="card section-gap">
+      <div class="h2">Средний балл по предметам</div>
+      ${subjectBars}
+    </div>
+
+    <div class="card section-gap">
+      <div class="h2">Лучшая / худшая посещаемость</div>
+      ${attOv.best ? `<div class="report-line"><span>🏆 Лучшая посещаемость</span><span>${esc(fullName(attOv.best.student))} — ${fmtPct(attOv.best.pct)}</span></div>` : ""}
+      ${attOv.worst ? `<div class="report-line"><span>⚠️ Больше всего пропусков</span><span>${esc(fullName(attOv.worst.student))} — ${fmtPct(attOv.worst.pct)}</span></div>` : ""}
+      ${(!attOv.best && !attOv.worst) ? `<div class="empty">Пока нет данных за этот месяц</div>` : ""}
+    </div>
+
+    <div class="card section-gap">
+      <div class="h2">Требуют внимания</div>
+      <div class="muted" style="margin-bottom:8px;">Посещаемость ниже 80% или средний балл ниже 3.4</div>
+      ${attentionHtml}
+    </div>
+  `;
+}
+
+/* ============================================================
+   ИТОГИ МЕСЯЦА
+============================================================ */
+function renderSummary(){
+  const mk = state.selectedMonth;
+  const students = [...state.students].sort((a,b)=>(a.number||0)-(b.number||0));
+  document.getElementById("app").innerHTML = `
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div class="h1" style="margin:0;">Итоги месяца — ${esc(mk)}</div>
+        <button class="btn btn-primary" data-action="generateSummary" ${students.length?"":"disabled"}>Сформировать итоги месяца</button>
+      </div>
+      <div id="summaryOutput" class="section-gap"></div>
+    </div>
+  `;
+}
+function generateSummary(){
+  const mk = state.selectedMonth;
+  const students = [...state.students].sort((a,b)=>(a.number||0)-(b.number||0));
+  let html = "";
+  let textAll = `ИТОГИ МЕСЯЦА — ${mk.toUpperCase()}\n${state.className} класс\n\n`;
+  students.forEach(s=>{
+    const a = studentAttendanceStats(s.id, mk);
+    const g = studentGradeStats(s.id, mk);
+    const bestTxt = g.best ? g.best.name.toLowerCase() : "недостаточно данных";
+    const worstTxt = g.worst ? g.worst.name.toLowerCase() : "недостаточно данных";
+    html += `
+      <div class="report-card">
+        <h4>${esc(fullName(s)).toUpperCase()}</h4>
+        <div class="report-line"><span>Учебных дней</span><span>${a.schoolDays}</span></div>
+        <div class="report-line"><span>Присутствовал(а)</span><span>${a.present + a.late}</span></div>
+        <div class="report-line"><span>Уважительных пропусков</span><span>${a.excused}</span></div>
+        <div class="report-line"><span>Неуважительных пропусков</span><span>${a.unexcused}</span></div>
+        <div class="report-line"><span>Опозданий</span><span>${a.late}</span></div>
+        <div class="report-line"><span>Посещаемость</span><span>${fmtPct(a.pct)}</span></div>
+        <div class="report-line" style="border-top:1px solid var(--line); margin-top:6px; padding-top:8px;"><span>Оценка «5»</span><span>${g.counts[5]}</span></div>
+        <div class="report-line"><span>Оценка «4»</span><span>${g.counts[4]}</span></div>
+        <div class="report-line"><span>Оценка «3»</span><span>${g.counts[3]}</span></div>
+        <div class="report-line"><span>Оценка «2»</span><span>${g.counts[2]}</span></div>
+        ${Object.values(g.bySubject).map(sub=>`<div class="report-line"><span>Средний балл — ${esc(sub.name)}</span><span>${fmtAvg(sub.avg)}</span></div>`).join("")}
+        <div class="report-line" style="border-top:1px solid var(--line); margin-top:6px; padding-top:8px;"><span>Лучший результат</span><span>${esc(bestTxt)}</span></div>
+        <div class="report-line"><span>Требует внимания</span><span>${esc(worstTxt)}</span></div>
+      </div>
+    `;
+    textAll += `${fullName(s).toUpperCase()}\n\nПосещаемость:\nУчебных дней — ${a.schoolDays}\nПрисутствовал(а) — ${a.present+a.late}\nУважительных пропусков — ${a.excused}\nНеуважительных пропусков — ${a.unexcused}\nОпозданий — ${a.late}\nПосещаемость — ${fmtPct(a.pct)}\n\nОценки:\n5 — ${g.counts[5]}\n4 — ${g.counts[4]}\n3 — ${g.counts[3]}\n2 — ${g.counts[2]}\n\n`;
+    if(Object.keys(g.bySubject).length){
+      textAll += `Средний балл:\n`;
+      Object.values(g.bySubject).forEach(sub=>{ textAll += `${sub.name} — ${fmtAvg(sub.avg)}\n`; });
+      textAll += `\n`;
+    }
+    textAll += `Лучший результат: ${bestTxt}.\nТребует внимания: ${worstTxt}.\n\n————————————————\n\n`;
+  });
+  window.__summaryText = textAll;
+  document.getElementById("summaryOutput").innerHTML = `
+    <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
+      <button class="btn btn-gold btn-sm" data-action="copySummary">📋 Скопировать текст отчёта</button>
+    </div>
+    ${html}
+  `;
+}
+function copySummary(){
+  if(!window.__summaryText){ toast("Сначала сформируйте итоги"); return; }
+  navigator.clipboard.writeText(window.__summaryText).then(()=>{
+    toast("Отчёт скопирован в буфер обмена");
+  }).catch(()=>{ toast("Не удалось скопировать — выделите текст вручную"); });
+}
+
+/* ============================================================
+   КАРТОЧКА УЧЕНИКА
+============================================================ */
+function renderStudentCard(){
+  const s = state.students.find(x=>x.id===currentStudentId);
+  if(!s){ currentView="students"; renderView(); return; }
+  const mk = state.selectedMonth;
+  const a = studentAttendanceStats(s.id, mk);
+  const g = studentGradeStats(s.id, mk);
+
+  // динамика по месяцам (средний балл)
+  const dynamics = MONTHS.map(m=>{
+    const gs = studentGradeStats(s.id, m.key);
+    return {month:m.key, avg:gs.overallAvg};
+  }).filter(d=>d.avg!=null);
+
+  const dynHtml = dynamics.length ? dynamics.map(d=>`
+    <div class="subject-bar-row">
+      <div class="name">${d.month}</div>
+      <div class="subject-bar-track"><div class="subject-bar-fill" style="width:${Math.min(100,d.avg/5*100)}%"></div></div>
+      <div class="subject-bar-val">${fmtAvg(d.avg)}</div>
+    </div>`).join("") : `<div class="empty">Пока нет оценок ни за один месяц</div>`;
+
+  const subjBars = Object.values(g.bySubject).length ? Object.values(g.bySubject).map(sub=>`
+    <div class="subject-bar-row">
+      <div class="name">${esc(sub.name)}</div>
+      <div class="subject-bar-track"><div class="subject-bar-fill" style="width:${Math.min(100,sub.avg/5*100)}%"></div></div>
+      <div class="subject-bar-val">${fmtAvg(sub.avg)}</div>
+    </div>`).join("") : `<div class="empty">Оценок за этот месяц нет</div>`;
+
+  const attTag = a.pct==null ? "" : a.pct>=90 ? `<span class="tag tag-good">Отличная посещаемость</span>` : a.pct<80 ? `<span class="tag tag-warn">Низкая посещаемость</span>` : "";
+  const gradeTag = g.overallAvg==null ? "" : g.overallAvg>=4.5 ? `<span class="tag tag-good">Отличная успеваемость</span>` : g.overallAvg<3.4 ? `<span class="tag tag-warn">Нужна поддержка</span>` : "";
+
+  document.getElementById("app").innerHTML = `
+    <button class="back-link" data-action="nav" data-view="students">← Назад к списку учеников</button>
+    <div class="card">
+      <div class="h1">${esc(fullName(s))}</div>
+      <div class="muted">№ ${s.number ?? "—"} по списку · ${esc(mk)}${s.phone ? ` · тел. родителей: ${esc(s.phone)}` : ""}</div>
+      <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">${attTag}${gradeTag}</div>
+    </div>
+
+    <div class="card section-gap">
+      <div class="h2">Посещаемость</div>
+      <div class="grid-stats">
+        <div class="stat-box sage"><div class="val">${a.present + a.late}</div><div class="lbl">Присутствовал</div></div>
+        <div class="stat-box gold"><div class="val">${a.excused}</div><div class="lbl">Уважит. пропуски</div></div>
+        <div class="stat-box rose"><div class="val">${a.unexcused}</div><div class="lbl">Неуважит. пропуски</div></div>
+        <div class="stat-box"><div class="val">${a.totalAbsent}</div><div class="lbl">Всего пропусков</div></div>
+        <div class="stat-box blue"><div class="val">${a.late}</div><div class="lbl">Опозданий</div></div>
+        <div class="stat-box plum"><div class="val">${fmtPct(a.pct)}</div><div class="lbl">Процент посещаемости</div></div>
+      </div>
+    </div>
+
+    <div class="card section-gap">
+      <div class="h2">Успеваемость</div>
+      <div class="grid-stats">
+        <div class="stat-box sage"><div class="val">${g.counts[5]}</div><div class="lbl">Пятёрок</div></div>
+        <div class="stat-box blue"><div class="val">${g.counts[4]}</div><div class="lbl">Четвёрок</div></div>
+        <div class="stat-box gold"><div class="val">${g.counts[3]}</div><div class="lbl">Троек</div></div>
+        <div class="stat-box rose"><div class="val">${g.counts[2]}</div><div class="lbl">Двоек</div></div>
+        <div class="stat-box plum"><div class="val">${fmtAvg(g.overallAvg)}</div><div class="lbl">Общий средний балл</div></div>
+      </div>
+      <div class="section-gap">${subjBars}</div>
+    </div>
+
+    <div class="card section-gap">
+      <div class="h2">Анализ</div>
+      <div class="report-line"><span>Сильный предмет</span><span>${g.best?esc(g.best.name):"недостаточно данных"}</span></div>
+      <div class="report-line"><span>Требует внимания</span><span>${g.worst?esc(g.worst.name):"недостаточно данных"}</span></div>
+    </div>
+
+    <div class="card section-gap">
+      <div class="h2">Динамика по месяцам (средний балл)</div>
+      ${dynHtml}
+    </div>
+  `;
+}
+
+/* ============================================================
+   НАСТРОЙКИ
+============================================================ */
+function renderSettings(){
+  const mk = state.selectedMonth;
+  const subjectRows = state.subjects.map(sub=>`
+    <div class="student-row">
+      <div class="student-name" style="cursor:default;">${esc(sub.name)}</div>
+      <div class="row-actions">
+        <button class="btn btn-sm ${sub.active?"btn-soft":"btn-outline"}" data-action="toggleSubject" data-id="${sub.id}">${sub.active?"Включён":"Выключен"}</button>
+        <button class="icon-btn" data-action="deleteSubject" data-id="${sub.id}" title="Удалить">🗑</button>
+      </div>
+    </div>
+  `).join("");
+
+  document.getElementById("app").innerHTML = `
+    <div class="card">
+      <div class="h1">Настройки</div>
+
+      <div class="section-gap">
+        <label style="font-size:11.5px; font-weight:700; color:var(--ink-soft); text-transform:uppercase;">Название школы</label>
+        <input id="schoolNameInput" style="width:100%; margin-top:6px; border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-size:15px;" value="${esc(state.schoolName||"")}" placeholder="Renessans School">
+        <div class="muted" style="margin-top:6px;">Отображается в шапке дневника. Меняется, если поменяете школу.</div>
+      </div>
+
+      <div class="section-gap">
+        <label style="font-size:11.5px; font-weight:700; color:var(--ink-soft); text-transform:uppercase;">Название класса</label>
+        <input id="classNameInput" style="width:100%; margin-top:6px; border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-size:15px;" value="${esc(state.className)}" placeholder="1 «Б»">
+        <div class="muted" style="margin-top:6px;">Меняется, если возьмёте другой класс — например «2 «А»» или «5 «В»».</div>
+      </div>
+
+      <div class="section-gap">
+        <label style="font-size:11.5px; font-weight:700; color:var(--ink-soft); text-transform:uppercase;">Учебных дней в «${esc(mk)}» (переопределить вручную)</label>
+        <div style="display:flex; gap:10px; margin-top:6px; align-items:center;">
+          <input id="schoolDaysInput" type="number" min="0" style="width:120px; border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-size:15px;" value="${state.schoolDaysOverride[mk] || ""}" placeholder="авто: ${markedDaysForMonth(mk).length}">
+          <span class="muted">Оставьте пустым для автоматического подсчёта по отмеченным дням</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card section-gap">
+      <div class="h2">Ученики</div>
+      <div class="muted">Сейчас в классе: ${state.students.length} учеников.</div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+        <button class="btn btn-primary" data-action="openAddStudent">+ Добавить одного ученика</button>
+        <button class="btn btn-soft" data-action="openBulkAddStudents">+ Добавить несколько сразу</button>
+        <button class="btn btn-outline" data-action="nav" data-view="students">👥 Открыть список учеников</button>
+      </div>
+    </div>
+
+    <div class="card section-gap">
+      <div class="h2">Предметы</div>
+      ${subjectRows}
+      <div style="display:flex; gap:8px; margin-top:12px;">
+        <input id="newSubjectInput" placeholder="Название нового предмета" style="flex:1; border:1px solid var(--line); border-radius:10px; padding:9px 12px;">
+        <button class="btn btn-primary" data-action="addSubject">+ Добавить</button>
+      </div>
+    </div>
+
+    <div class="card section-gap">
+      <div class="h2">Данные</div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-gold" data-action="exportJson">📤 Экспортировать данные (JSON)</button>
+      </div>
+      <div class="muted section-gap">Данные сохраняются автоматически при каждом изменении.</div>
+    </div>
+  `;
+
+  document.getElementById("schoolNameInput").addEventListener("change", e=>{
+    state.schoolName = e.target.value.trim() || "Renessans School";
+    commit();
+  });
+  document.getElementById("classNameInput").addEventListener("change", e=>{
+    state.className = e.target.value.trim() || "1 «Б»";
+    commit();
+  });
+  document.getElementById("schoolDaysInput").addEventListener("change", e=>{
+    const v = e.target.value.trim();
+    state.schoolDaysOverride[mk] = v ? Number(v) : null;
+    commit();
+  });
+}
+function toggleSubject(id){
+  const s = state.subjects.find(x=>x.id===id);
+  if(s){ s.active = !s.active; commit(); }
+}
+function deleteSubject(id){
+  state.subjects = state.subjects.filter(x=>x.id!==id);
+  state.grades = state.grades.filter(g=>g.subjectId!==id);
+  toast("Предмет удалён");
+  commit();
+}
+function addSubject(){
+  const inp = document.getElementById("newSubjectInput");
+  const name = inp.value.trim();
+  if(!name){ toast("Введите название предмета"); return; }
+  state.subjects.push({id:uid("subj"), name, active:true});
+  toast("Предмет добавлен");
+  commit();
+}
+function exportJson(){
+  const dataStr = JSON.stringify(state, null, 2);
+  navigator.clipboard.writeText(dataStr).then(()=>{
+    toast("Данные скопированы в буфер обмена (JSON)");
+  }).catch(()=>{
+    try{
+      const blob = new Blob([dataStr], {type:"application/json"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = "dnevnik_1b.json";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast("Файл экспортирован");
+    }catch(e){ toast("Не удалось экспортировать данные"); }
+  });
+}
+
+/* ============================================================
+   ГЛАВНЫЙ РЕНДЕР / РОУТИНГ
+============================================================ */
+function renderView(){
+  renderChrome();
+  if(currentView==="dashboard") renderDashboard();
+  else if(currentView==="students") renderStudents();
+  else if(currentView==="attendance") renderAttendance();
+  else if(currentView==="grades") renderGrades();
+  else if(currentView==="stats") renderStats();
+  else if(currentView==="summary") renderSummary();
+  else if(currentView==="card") renderStudentCard();
+  else if(currentView==="settings") renderSettings();
+}
+function render(){ renderView(); }
+
+/* ============================================================
+   ДЕЛЕГИРОВАНИЕ СОБЫТИЙ
+============================================================ */
+document.addEventListener("click", (e)=>{
+  const t = e.target.closest("[data-action]");
+  if(!t) return;
+  const action = t.dataset.action;
+  const id = t.dataset.id;
+
+  switch(action){
+    case "nav": currentView = t.dataset.view; render(); break;
+    case "openCard": currentStudentId = id; currentView="card"; render(); break;
+    case "openAddStudent": openAddStudentModal(); break;
+    case "saveNewStudent": saveNewStudent(); break;
+    case "openBulkAddStudents": openBulkAddStudents(); break;
+    case "saveBulkStudents": saveBulkStudents(); break;
+    case "editStudent": openEditStudentModal(id); break;
+    case "saveEditStudent": saveEditStudent(id); break;
+    case "deleteStudent": deleteStudent(id); break;
+    case "confirmDeleteStudent": confirmDeleteStudent(id); break;
+    case "closeModal": closeModal(); break;
+    case "markAllPresent": markAllPresent(); break;
+    case "cellClick": openAttendancePopover(t, t.dataset.student, Number(t.dataset.day)); break;
+    case "pickGrade": pickGrade(Number(t.dataset.value)); break;
+    case "addGrade": addGrade(); break;
+    case "deleteGrade": deleteGrade(id); break;
+    case "generateSummary": generateSummary(); break;
+    case "copySummary": copySummary(); break;
+    case "toggleSubject": toggleSubject(id); break;
+    case "deleteSubject": deleteSubject(id); break;
+    case "addSubject": addSubject(); break;
+    case "exportJson": exportJson(); break;
+  }
+});
+
+document.getElementById("tabs").addEventListener("click", (e)=>{
+  const t = e.target.closest(".tab");
+  if(!t) return;
+  currentView = t.dataset.view;
+  render();
+});
+document.getElementById("monthSelect").addEventListener("change", (e)=>{
+  state.selectedMonth = e.target.value;
+  commit();
+});
+
+/* ============================================================
+   СТАРТ
+============================================================ */
+loadState();
+</script>
+</body>
+</html>
