@@ -273,13 +273,20 @@ th,td{text-align:left;}
 <div class="container" id="app"></div>
 <div id="modalRoot"></div>
 <div id="toastRoot"></div>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ============================================================
    ДАННЫЕ / КОНСТАНТЫ
 ============================================================ */
 const STORAGE_KEY = "dnevnik-1b-v1";
+const SUPABASE_URL = "https://lwiiqvrswhayizflatjr.supabase.co";
+const SUPABASE_KEY = "sb_publishable_KP8Km3ZHhQotIkbGZsqelA_i1MUuLhq";
+const CLASS_KEY = "1b";
 
+const db = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
 const MONTHS = [
   {key:"Сентябрь", year:2026, m:8},
   {key:"Октябрь",  year:2026, m:9},
@@ -356,19 +363,55 @@ let saving = false;
 /* ============================================================
    ПЕРСИСТЕНТНОСТЬ
 ============================================================ */
+async function ensureAuth(){
+  const { data: sessionData } = await db.auth.getSession();
+
+  if(sessionData && sessionData.session){
+    return sessionData.session;
+  }
+
+  const email = prompt("Введите email для входа в журнал:");
+  if(!email) throw new Error("Вход отменён");
+
+  const password = prompt("Введите пароль:");
+  if(!password) throw new Error("Вход отменён");
+
+  const { data, error } = await db.auth.signInWithPassword({
+    email: email.trim(),
+    password: password
+  });
+
+  if(error) throw error;
+
+  return data.session;
+}
+
 async function loadState(){
   try{
-    const res = await window.storage.get(STORAGE_KEY, false);
-    if(res && res.value){
-      const loaded = JSON.parse(res.value);
-      state = Object.assign(defaultState(), loaded);
-      if(!loaded.students || loaded.students.length===0){
-        state.students = SEED_STUDENTS.map(s=>({...s}));
+    await ensureAuth();
+
+    const { data, error } = await db
+      .from("journal_states")
+      .select("data")
+      .eq("class_key", CLASS_KEY)
+      .single();
+
+    if(error) throw error;
+
+    if(data && data.data && Object.keys(data.data).length > 0){
+      state = Object.assign(defaultState(), data.data);
+
+      if(!state.students || state.students.length === 0){
+        state.students = SEED_STUDENTS.map(s => ({...s}));
       }
     }
+
+    setSaveStatus("ok");
   }catch(e){
-    // нет сохранённых данных — начинаем с чистого состояния
+    console.error("Ошибка загрузки:", e);
+    setSaveStatus("error");
   }
+
   render();
 }
 
@@ -377,13 +420,31 @@ function scheduleSave(){
   clearTimeout(saveTimer);
   saveTimer = setTimeout(doSave, 500);
 }
+
 async function doSave(){
   try{
-    const res = await window.storage.set(STORAGE_KEY, JSON.stringify(state), false);
-    if(res){ setSaveStatus("ok"); } else { setSaveStatus("error"); retrySave(); }
-  }catch(e){ setSaveStatus("error"); retrySave(); }
+    await ensureAuth();
+
+    const { error } = await db
+      .from("journal_states")
+      .update({
+        data: state,
+        updated_at: new Date().toISOString()
+      })
+      .eq("class_key", CLASS_KEY);
+
+    if(error) throw error;
+
+    setSaveStatus("ok");
+  }catch(e){
+    console.error("Ошибка сохранения:", e);
+    setSaveStatus("error");
+    retrySave();
+  }
 }
+
 let retryTimer = null;
+
 function retrySave(){
   clearTimeout(retryTimer);
   retryTimer = setTimeout(doSave, 4000);
