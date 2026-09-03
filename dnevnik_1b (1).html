@@ -279,8 +279,8 @@ th,td{text-align:left;}
    ДАННЫЕ / КОНСТАНТЫ
 ============================================================ */
 const STORAGE_KEY = "dnevnik-1b-v1";
-const SUPABASE_URL = "https://lwiiqvrswhayizflatjr.supabase.co";
-const SUPABASE_KEY = "sb_publishable_KP8Km3ZHhQotIkbGZsqelA_i1MUuLhq";
+const SUPABASE_URL = "https://umioesjsewpiplvcdcyr.supabase.co";
+const SUPABASE_KEY = "sb_publishable_CmpDl-BsGh0q3FDETcf0_Q_ieo-Fqkm";
 const CLASS_KEY = "1b";
 
 const db = window.supabase.createClient(
@@ -407,12 +407,13 @@ async function loadState(){
     }
 
     setSaveStatus("ok");
-  }catch(e){
-    console.error("Ошибка загрузки:", e);
-    setSaveStatus("error");
-  }
+ }catch(e){
+  console.error("Ошибка загрузки:", e);
+  alert("Неверный email или пароль. Доступ к журналу запрещён.");
+  return;
+}
 
-  render();
+render();
 }
 
 function scheduleSave(){
