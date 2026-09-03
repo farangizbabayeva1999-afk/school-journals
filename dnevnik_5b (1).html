@@ -254,10 +254,19 @@ th,td{text-align:left;}
     </div>
   </div>
   <select class="month-select" id="monthSelect"></select>
+ <div style="display:flex; align-items:center; gap:10px;">
   <div style="display:flex; align-items:center; gap:6px;">
     <div class="save-dot" id="saveDot"></div>
     <span class="save-label" id="saveLabel">сохранено</span>
   </div>
+
+  <button
+    type="button"
+    class="btn btn-outline btn-sm"
+    onclick="logoutUser()"
+  >
+    Выйти
+  </button>
 </div>
 
 <div class="tabs" id="tabs">
