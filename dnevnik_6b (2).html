@@ -462,22 +462,102 @@ async function logoutUser(){
     return sessionData.session;
   }
 
-  const email = prompt("Введите email для входа в журнал:");
-  if(!email) throw new Error("Вход отменён");
+  return new Promise((resolve, reject) => {
+    const root = document.getElementById("modalRoot");
 
-  const password = prompt("Введите пароль:");
-  if(!password) throw new Error("Вход отменён");
+    root.innerHTML = `
+      <div class="modal-backdrop" id="loginModal">
+        <div class="modal">
+          <h3>Вход в электронный журнал</h3>
 
-  const { data, error } = await db.auth.signInWithPassword({
-    email: email.trim(),
-    password: password
+          <div style="margin-bottom:18px; color:#777;">
+            6 «Б» класс
+          </div>
+
+          <div class="field">
+            <label>Email</label>
+            <input
+              type="email"
+              id="loginEmail"
+              placeholder="Введите email"
+              autocomplete="email"
+            >
+          </div>
+
+          <div class="field">
+            <label>Пароль</label>
+            <input
+              type="password"
+              id="loginPassword"
+              placeholder="Введите пароль"
+              autocomplete="current-password"
+            >
+          </div>
+
+          <div
+            id="loginError"
+            style="display:none; color:#b42318; margin-top:10px; font-size:13px;"
+          ></div>
+
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="btn btn-primary"
+              id="loginButton"
+            >
+              Войти
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const emailInput = document.getElementById("loginEmail");
+    const passwordInput = document.getElementById("loginPassword");
+    const button = document.getElementById("loginButton");
+    const errorBox = document.getElementById("loginError");
+
+    async function login(){
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+
+      errorBox.style.display = "none";
+
+      if(!email || !password){
+        errorBox.textContent = "Введите email и пароль.";
+        errorBox.style.display = "block";
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = "Вход...";
+
+      const { data, error } = await db.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if(error){
+        errorBox.textContent = "Неверный email или пароль.";
+        errorBox.style.display = "block";
+        button.disabled = false;
+        button.textContent = "Войти";
+        return;
+      }
+
+      root.innerHTML = "";
+      resolve(data.session);
+    }
+
+    button.addEventListener("click", login);
+
+    passwordInput.addEventListener("keydown", e => {
+      if(e.key === "Enter") login();
+    });
+
+    emailInput.focus();
   });
-
-  if(error) throw error;
-
-  return data.session;
 }
-
 async function loadState(){
   try{
     await ensureAuth();
