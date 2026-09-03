@@ -432,7 +432,19 @@ let saving = false;
 /* ============================================================
    ПЕРСИСТЕНТНОСТЬ
 ============================================================ */
-async function ensureAuth(){
+async function logoutUser(){
+  const { error } = await db.auth.signOut();
+
+  if(error){
+    console.error("Ошибка выхода:", error);
+    alert("Не удалось выйти. Попробуйте ещё раз.");
+    return;
+  }
+
+  window.location.reload();
+}
+
+  async function ensureAuth(){
   const { data: sessionData } = await db.auth.getSession();
 
   if(sessionData && sessionData.session){
