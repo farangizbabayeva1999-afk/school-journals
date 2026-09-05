@@ -374,7 +374,8 @@ let currentView = "dashboard";
 let currentStudentId = null;
 let saveTimer = null;
 let saving = false;
-
+const DIRECTOR_UID = "094cfe1a-d7a2-477a-a4b9-8a4fad81ae2b";
+let isDirector = false;
 /* ============================================================
    ПЕРСИСТЕНТНОСТЬ
 ============================================================ */
@@ -495,8 +496,9 @@ async function logoutUser(){
 
 async function loadState(){
   try{
-    await ensureAuth();
-
+    const session = await ensureAuth();
+isDirector = session?.user?.id === DIRECTOR_UID;
+    
     const { data, error } = await db
       .from("journal_states")
       .select("data")
