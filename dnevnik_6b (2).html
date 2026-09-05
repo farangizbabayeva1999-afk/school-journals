@@ -445,7 +445,9 @@ let currentView = "dashboard";
 let currentStudentId = null;
 let saveTimer = null;
 let saving = false;
-
+const DIRECTOR_UID = "094cfe1a-d7a2-477a-a4b9-8a4fad81ae2b";
+let isDirector = false;
+  
 /* ============================================================
    ПЕРСИСТЕНТНОСТЬ
 ============================================================ */
@@ -566,7 +568,8 @@ async function logoutUser(){
 }
 async function loadState(){
   try{
-    await ensureAuth();
+const session = await ensureAuth();
+isDirector = session?.user?.id === DIRECTOR_UID;
 
     const { data, error } = await db
       .from("journal_states")
@@ -645,7 +648,15 @@ function setSaveStatus(s){
   lbl.textContent = s==="saving" ? "сохранение…" : s==="error" ? "не сохранено — повтор…" : "сохранено";
 }
 
-function commit(){ scheduleSave(); render(); }
+function commit(){
+  if(isDirector){
+    render();
+    return;
+  }
+
+  scheduleSave();
+  render();
+}
 
 /* ============================================================
    ВСПОМОГАТЕЛЬНЫЕ РАСЧЁТЫ
@@ -1520,11 +1531,28 @@ function renderSettings(){
     </div>
   `;
 
-  document.getElementById("classNameInput").addEventListener("change", e=>{
-    state.className = e.target.value.trim() || "6 «Б»";
-    commit();
-  });
-  document.getElementById("schoolDaysInput").addEventListener("change", e=>{
+ document.getElementById("classNameInput").addEventListener("change", e=>{
+  if(isDirector){
+    toast("Режим директора — только просмотр");
+    render();
+    return;
+  }
+
+  state.className = e.target.value.trim() || "6 «Б»";
+  commit();
+});
+document.getElementById("schoolDaysInput").addEventListener("change", e=>{
+  if(isDirector){
+    toast("Режим директора — только просмотр");
+    render();
+    return;
+  }
+
+  const v = e.target.value.trim();
+  state.schoolDaysOverride[mk] = v ? Number(v) : null;
+  commit();
+});
+  
     const v = e.target.value.trim();
     state.schoolDaysOverride[mk] = v ? Number(v) : null;
     commit();
@@ -1614,6 +1642,39 @@ document.addEventListener("click", (e)=>{
   const action = t.dataset.action;
   const id = t.dataset.id;
 
+    const directorBlockedActions = new Set([
+    "openAddStudent",
+    "saveNewStudent",
+    "editStudent",
+    "saveEditStudent",
+    "deleteStudent",
+    "confirmDeleteStudent",
+
+    "markAllPresent",
+    "cellClick",
+
+    "pickGrade",
+    "addGrade",
+    "deleteGrade",
+
+    "toggleSubject",
+    "deleteSubject",
+    "addSubject",
+    "editSubjectTeacher",
+    "saveSubjectTeacher",
+
+    "openAddLesson",
+    "saveNewLesson",
+    "editLesson",
+    "saveEditLesson",
+    "deleteLesson"
+  ]);
+
+  if(isDirector && directorBlockedActions.has(action)){
+    toast("Режим директора — только просмотр");
+    return;
+  }
+  
   switch(action){
     case "nav": currentView = t.dataset.view; render(); break;
     case "openCard": currentStudentId = id; currentView="card"; render(); break;
@@ -1653,6 +1714,12 @@ document.getElementById("tabs").addEventListener("click", (e)=>{
 });
 document.getElementById("monthSelect").addEventListener("change", (e)=>{
   state.selectedMonth = e.target.value;
+
+  if(isDirector){
+    render();
+    return;
+  }
+
   commit();
 });
 
