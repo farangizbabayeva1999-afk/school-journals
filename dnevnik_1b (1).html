@@ -567,8 +567,16 @@ function setSaveStatus(s){
   lbl.textContent = s==="saving" ? "сохранение…" : s==="error" ? "не сохранено — повтор…" : "сохранено";
 }
 
-function commit(){ scheduleSave(); render(); }
+function commit(){
+  if(isDirector){
+    render();
+    return;
+  }
 
+  scheduleSave();
+  render();
+}
+  
 /* ============================================================
    ВСПОМОГАТЕЛЬНЫЕ РАСЧЁТЫ
 ============================================================ */
@@ -1494,7 +1502,30 @@ document.addEventListener("click", (e)=>{
   if(!t) return;
   const action = t.dataset.action;
   const id = t.dataset.id;
+  const directorBlockedActions = new Set([
+    "openAddStudent",
+    "saveNewStudent",
+    "openBulkAddStudents",
+    "saveBulkStudents",
+    "editStudent",
+    "saveEditStudent",
+    "deleteStudent",
+    "confirmDeleteStudent",
+    "markAllPresent",
+    "cellClick",
+    "pickGrade",
+    "addGrade",
+    "deleteGrade",
+    "toggleSubject",
+    "deleteSubject",
+    "addSubject"
+  ]);
 
+  if(isDirector && directorBlockedActions.has(action)){
+    toast("Режим директора — только просмотр");
+    return;
+  }
+  
   switch(action){
     case "nav": currentView = t.dataset.view; render(); break;
     case "openCard": currentStudentId = id; currentView="card"; render(); break;
@@ -1529,6 +1560,12 @@ document.getElementById("tabs").addEventListener("click", (e)=>{
 });
 document.getElementById("monthSelect").addEventListener("change", (e)=>{
   state.selectedMonth = e.target.value;
+
+  if(isDirector){
+    render();
+    return;
+  }
+
   commit();
 });
 
