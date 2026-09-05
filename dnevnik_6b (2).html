@@ -1541,6 +1541,7 @@ function renderSettings(){
   state.className = e.target.value.trim() || "6 «Б»";
   commit();
 });
+
 document.getElementById("schoolDaysInput").addEventListener("change", e=>{
   if(isDirector){
     toast("Режим директора — только просмотр");
@@ -1552,11 +1553,6 @@ document.getElementById("schoolDaysInput").addEventListener("change", e=>{
   state.schoolDaysOverride[mk] = v ? Number(v) : null;
   commit();
 });
-  
-    const v = e.target.value.trim();
-    state.schoolDaysOverride[mk] = v ? Number(v) : null;
-    commit();
-  });
 }
 function editSubjectTeacher(id){
   const s = state.subjects.find(x=>x.id===id);
